@@ -189,12 +189,22 @@
 	if(brain.brainmob.mind in ticker.mode.head_revolutionaries)
 		user << "\red The frame's firmware lets out a shrill sound, and flashes 'Abnormal Memory Engram'. It refuses to accept the [brain]."
 		return
-	if(jobban_isbanned(brain.brainmob, "Cyborg"))
-		user << "\red This [brain] does not seem to fit."
-		return
+	if (building_a_cyborg())
+		if(jobban_isbanned(brain.brainmob, "Cyborg"))
+			user << "\red This [brain] does not seem to fit."
+			return
+	else
+		if(!is_alien_whitelisted(brain.brainmob, "Machine")) //They still need a whitelist! Scopes.
+			user << "The shell refuses to integrate with [brain]"
+			return
 	return TRUE
 
 
+/obj/item/robot_parts/robot_suit/proc/building_a_cyborg() // making this a function as the mechanism may change in the future
+	if (src.head)
+		return src.head.law_computer
+	
+	
 /obj/item/robot_parts/robot_suit/attackby(obj/item/W as obj, mob/user as mob)
 	..()
 	// HANDLE ED209 ASSEMBLY
@@ -253,16 +263,11 @@
 	if(istype(W, /obj/item/device/mmi))
 		var/obj/item/device/mmi/brain = W
 		if (allowed_to_build(user,brain)) // we are allowed to build this robot
-			if (src.head.law_computer) // do we have a law computer? If so, we're making a standard robot
-				user.drop_item() // We only drop it if it's compatible
+			user.drop_item() // We only drop it if it's compatible
+			if (building_a_cyborg())// are we building a standard robot ?
 				create_robot(brain)
-			else // otherwise we're making a shell
-				if(is_alien_whitelisted(brain.brainmob, "Machine")) //They still need a whitelist! Scopes.
-					user.drop_item() // We only drop it if it's compatible
-					create_shell(brain)
-				else
-					user << "The shell refuses to intergate with [brain]"
-					return
+			else // Or are we building an IPC?
+				create_shell(brain)
 
 /obj/item/robot_parts/robot_suit/proc/create_robot(obj/item/device/mmi/brain as obj)
 	var/mob/living/silicon/robot/new_robot = new(get_turf(loc), unfinished = 1)
