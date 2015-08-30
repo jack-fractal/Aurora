@@ -200,9 +200,13 @@
 
 	..()
 
-	verbs += /mob/living/proc/ventcrawl
 	verbs += /mob/living/proc/hide
 
+	
+/mob/living/simple_animal/spiderbot/can_use_vents()
+	return
+	
+	
 /mob/living/simple_animal/spiderbot/death()
 
 	living_mob_list -= src

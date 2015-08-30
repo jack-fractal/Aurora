@@ -41,13 +41,15 @@
 	/mob/living/carbon/alien/humanoid/proc/neurotoxin,
 	/mob/living/carbon/alien/humanoid/proc/weak_acid,
 	/mob/living/carbon/alien/humanoid/proc/corrosive_acid,
-	/mob/living/carbon/alien/humanoid/proc/quickspit,
-	/mob/living/carbon/alien/ventcrawl)
+	/mob/living/carbon/alien/humanoid/proc/quickspit)
 	verbs -= /mob/living/carbon/alien/humanoid/verb/plant
 	..()
 
+	
+/mob/living/carbon/alien/humanoid/sentinel/can_use_vents()
+	return
 
-
+	
 /mob/living/carbon/alien/humanoid/spitter/verb/evolve() // -- TLE
 	set name = "Evolve (Jelly)"
 	set desc = "Evolve into a Praetorian"

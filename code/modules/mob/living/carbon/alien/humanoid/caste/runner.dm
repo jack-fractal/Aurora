@@ -37,7 +37,6 @@
 	verbs -= /atom/movable/verb/pull
 	verbs -= /mob/living/carbon/alien/humanoid/verb/plant
 	verbs -= /mob/living/carbon/alien/verb/unweld_vent
-	verbs += /mob/living/carbon/alien/ventcrawl
 	//var/matrix/M = matrix()
 	//M.Scale(1.15,1.1)
 	//src.transform = M
@@ -45,6 +44,10 @@
 	..()
 
 
+/mob/living/carbon/alien/humanoid/runner/can_use_vents()
+	return
+	
+	
 /mob/living/carbon/alien/humanoid/runner/verb/evolve2() // -- TLE
 	set name = "Evolve (Jelly)"
 	set desc = "Evolve into a Warrior"

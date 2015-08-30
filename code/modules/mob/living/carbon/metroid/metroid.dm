@@ -55,8 +55,6 @@
 
 /mob/living/carbon/slime/New()
 
-	verbs += /mob/living/proc/ventcrawl
-
 	create_reagents(100)
 	spawn (0)
 		number = rand(1, 1000)
@@ -69,6 +67,9 @@
 		coretype = text2path("/obj/item/slime_extract/[sanitizedcolour]")
 	..()
 
+/mob/living/carbon/slime/can_use_vents()
+	return
+	
 /mob/living/carbon/slime/regenerate_icons()
 	icon_state = "[colour] [is_adult ? "adult" : "baby"] slime"
 	overlays.len = 0

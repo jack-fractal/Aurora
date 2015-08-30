@@ -30,7 +30,6 @@
 /mob/living/silicon/robot/drone/New()
 
 	..()
-	verbs += /mob/living/proc/ventcrawl
 	verbs += /mob/living/proc/hide
 	remove_language("Robot Talk")
 	add_language("Robot Talk", 0)
@@ -67,6 +66,9 @@
 	flavor_text = "It's a tiny little repair drone. The casing is stamped with an NT logo and the subscript: 'NanoTrasen Recursive Repair Systems: Fixing Tomorrow's Problem, Today!'"
 	updateicon()
 
+/mob/living/silicon/robot/drone/can_use_vents()
+	return
+	
 /mob/living/silicon/robot/drone/init()
 	laws = new /datum/ai_laws/drone()
 	connected_ai = null

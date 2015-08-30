@@ -1,7 +1,3 @@
-/mob/living/carbon/alien/ventcrawl() // -- TLE
-	src << "\red To vent crawl, Alt + Click the vent."
-
-
 /mob/living/carbon/alien/verb/toggle_darkness()
    set name = "Toggle Nightvision"
    set category = "Alien"

@@ -33,10 +33,12 @@
 	real_name = name
 	regenerate_icons()
 	verbs -= /atom/movable/verb/pull
-	verbs += /mob/living/carbon/alien/ventcrawl
 	//processing_objects.Add(src)
 	..()
 
+/mob/living/carbon/alien/larva/can_use_vents()
+	return
+	
 /mob/living/carbon/alien/larva/start_pulling(var/atom/movable/AM)
 	src << "<span class='warning'>You can't pull anything.</span>"
 	return

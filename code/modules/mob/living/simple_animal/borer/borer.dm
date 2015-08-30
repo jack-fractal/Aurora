@@ -40,7 +40,6 @@
 	..()
 
 	add_language("Cortical Link")
-	verbs += /mob/living/proc/ventcrawl
 	verbs += /mob/living/proc/hide
 
 	truename = "[pick("Primary","Secondary","Tertiary","Quaternary")] [rand(1000,9999)]"
@@ -202,6 +201,6 @@
 		src.mind.assigned_role = "Cortical Borer"
 		src.mind.special_role = "Cortical Borer"
 		ticker.mode.borers |= src.mind
-
+		
 /mob/living/simple_animal/borer/can_use_vents()
 	return

@@ -727,18 +727,16 @@
 	src << "\blue You are now [resting ? "resting" : "getting up"]"
 
 /mob/living/proc/handle_ventcrawl(var/obj/machinery/atmospherics/unary/vent_pump/vent_found = null, var/ignore_items = 0) // -- TLE -- Merged by Carn
+	var/special_fail_msg = can_use_vents()
+	if(special_fail_msg)
+		src << "\red [special_fail_msg]"
+		return	
 	if(stat)
 		src << "You must be conscious to do this!"
 		return
 	if(lying)
 		src << "You can't vent crawl while you're stunned!"
 		return
-
-	var/special_fail_msg = can_use_vents()
-	if(special_fail_msg)
-		src << "\red [special_fail_msg]"
-		return
-
 	if(vent_found) // one was passed in, probably from vent/AltClick()
 		if(vent_found.welded)
 			src << "That vent is welded shut."

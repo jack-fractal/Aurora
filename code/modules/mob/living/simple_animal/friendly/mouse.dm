@@ -52,7 +52,6 @@
 /mob/living/simple_animal/mouse/New()
 	..()
 
-	verbs += /mob/living/proc/ventcrawl
 	verbs += /mob/living/proc/hide
 
 	name = "[name] ([rand(1, 1000)])"
@@ -75,6 +74,11 @@
 	if(body_color == "white")
 		holder_type = /obj/item/weapon/holder/mouse/white
 
+		
+/mob/living/simple_animal/mouse/can_use_vents()
+	return
+		
+		
 /mob/living/simple_animal/mouse/proc/splat()
 	src.health = 0
 	src.stat = DEAD
