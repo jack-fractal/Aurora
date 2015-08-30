@@ -139,6 +139,9 @@
 	using.layer = 19
 	src.adding += using
 
+
+///////////////TEMP REMOVAL OF POCKETS
+/*
 	//pocket 1
 	inv_box = new /obj/screen/inventory()
 	inv_box.name = "storage1"
@@ -158,6 +161,9 @@
 	inv_box.slot_id = slot_r_store
 	inv_box.layer = 19
 	src.adding += inv_box
+*/
+
+
 
 	//head
 	inv_box = new /obj/screen/inventory()
@@ -210,6 +216,18 @@
 	mymob.healths.name = "health"
 	mymob.healths.screen_loc = ui_alien_health
 
+	mymob.alien_plasma_display = new /obj/screen()
+	mymob.alien_plasma_display.icon = 'icons/mob/screen1_alien.dmi'
+	mymob.alien_plasma_display.icon_state = "plasma0"
+	mymob.alien_plasma_display.name = "plasma stored"
+	mymob.alien_plasma_display.screen_loc = ui_alienplasmadisplay
+
+	mymob.locate_queen = new /obj/screen()
+	mymob.locate_queen.icon = 'icons/mob/screen1_alien.dmi'
+	mymob.locate_queen.icon_state = "trackoff"
+	mymob.locate_queen.name = "queen locator"
+	mymob.locate_queen.screen_loc = ui_queen_locator
+
 	mymob.pullin = new /obj/screen()
 	mymob.pullin.icon = 'icons/mob/screen1_alien.dmi'
 	mymob.pullin.icon_state = "pull0"
@@ -237,5 +255,5 @@
 
 	mymob.client.screen = null
 
-	mymob.client.screen += list( mymob.throw_icon, mymob.zone_sel, mymob.oxygen, mymob.toxin, mymob.fire, mymob.healths, mymob.pullin, mymob.blind, mymob.flash) //, mymob.hands, mymob.rest, mymob.sleep, mymob.mach )
+	mymob.client.screen += list( mymob.throw_icon, mymob.zone_sel, mymob.oxygen, mymob.toxin, mymob.fire, mymob.healths, mymob.alien_plasma_display, mymob.locate_queen, mymob.pullin, mymob.blind, mymob.flash) //, mymob.hands, mymob.rest, mymob.sleep, mymob.mach )
 	mymob.client.screen += src.adding + src.other

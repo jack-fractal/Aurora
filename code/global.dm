@@ -266,3 +266,28 @@ var/DBConnection/dbcon = new()	//Main database
 
 //added for Xenoarchaeology, might be useful for other stuff
 var/global/list/alphabet_uppercase = list("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
+
+//Queen respawn timer
+var/queen_died = 0
+
+//Aliens
+var/score_alienscore = 0
+var/score_aliens_won = 0
+/*
+0 = fail
+1 = alien major
+2 = aline minor
+*/
+
+var/score_aliens_dead = 0
+var/score_larvas_dead = 0
+var/score_queens_dead = 0
+var/score_aliens_survived = 0
+var/score_queen_survived = 0
+var/score_eggs_made = 0
+var/score_weeds_made = 0
+var/score_hosts_infected = 0
+
+var/score_resin_made = 0
+var/score_tackles_made = 0
+var/score_slashes_made = 0

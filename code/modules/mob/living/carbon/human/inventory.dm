@@ -335,6 +335,10 @@
 	name = "monkey"
 	var/mob/living/carbon/monkey/target = null
 
+/obj/effect/equip_e/alien
+	name = "alien"
+	var/mob/living/carbon/alien/target = null
+	
 /obj/effect/equip_e/process()
 	return
 

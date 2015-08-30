@@ -817,7 +817,7 @@ note dizziness decrements automatically in the mob's Life() proc.
 	else if( stat || weakened || paralysis || resting || sleeping || (status_flags & FAKEDEATH))
 		lying = 1
 		canmove = 0
-	else if( stunned )
+	else if( stunned || frozen)
 		canmove = 0
 	else if(captured)
 		anchored = 1

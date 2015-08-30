@@ -51,6 +51,12 @@
 	mymob.healths.name = "health"
 	mymob.healths.screen_loc = ui_alien_health
 
+	mymob.locate_queen = new /obj/screen()
+	mymob.locate_queen.icon = 'icons/mob/screen1_alien.dmi'
+	mymob.locate_queen.icon_state = "trackoff"
+	mymob.locate_queen.name = "queen locator"
+	mymob.locate_queen.screen_loc = ui_queen_locator
+
 	mymob.pullin = new /obj/screen()
 	mymob.pullin.icon = 'icons/mob/screen1_alien.dmi'
 	mymob.pullin.icon_state = "pull0"
@@ -77,5 +83,5 @@
 
 	mymob.client.screen = null
 
-	mymob.client.screen += list( mymob.zone_sel, mymob.oxygen, mymob.toxin, mymob.fire, mymob.healths, mymob.pullin, mymob.blind, mymob.flash) //, mymob.rest, mymob.sleep, mymob.mach )
+	mymob.client.screen += list( mymob.zone_sel, mymob.oxygen, mymob.toxin, mymob.fire, mymob.healths, mymob.locate_queen, mymob.pullin, mymob.blind, mymob.flash) //, mymob.rest, mymob.sleep, mymob.mach )
 	mymob.client.screen += src.adding + src.other

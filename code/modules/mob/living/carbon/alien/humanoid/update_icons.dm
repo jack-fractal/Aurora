@@ -4,8 +4,7 @@
 #define X_L_HAND_LAYER			3
 #define X_R_HAND_LAYER			4
 #define TARGETED_LAYER			5
-#define X_FIRE_LAYER			6
-#define X_TOTAL_LAYERS			6
+#define X_TOTAL_LAYERS			5
 /////////////////////////////////
 
 /mob/living/carbon/alien/humanoid
@@ -19,23 +18,23 @@
 	if(stat == DEAD)
 		//If we mostly took damage from fire
 		if(fireloss > 125)
-			icon_state = "alien[caste]_husked"
+			icon_state = "[caste] Dead"
 		else
-			icon_state = "alien[caste]_dead"
+			icon_state = "[caste] Dead"
 		for(var/image/I in overlays_lying)
 			overlays += I
 	else if(lying)
 		if(resting)
-			icon_state = "alien[caste]_sleep"
+			icon_state = "[caste] Sleeping"
 		else if(stat == UNCONSCIOUS)
-			icon_state = "alien[caste]_unconscious"
+			icon_state = "[caste] Knocked Down"
 		else
-			icon_state = "alien[caste]_l"
+			icon_state = "[caste] Knocked Down"
 		for(var/image/I in overlays_lying)
 			overlays += I
 	else
-		if(m_intent == "run")		icon_state = "alien[caste]_running"
-		else						icon_state = "alien[caste]_s"
+		if(m_intent == "run")		icon_state = "[caste] Running"
+		else						icon_state = "[caste] Walking"
 		for(var/image/I in overlays_standing)
 			overlays += I
 
@@ -50,7 +49,7 @@
 	update_inv_pockets(0)
 	update_hud()
 	update_icons()
-	update_fire()
+
 
 /mob/living/carbon/alien/humanoid/update_hud()
 	//TODO
@@ -59,20 +58,7 @@
 //		else		client.screen -= hud_used.other		//Not used
 		client.screen |= contents
 
-/mob/living/carbon/alien/humanoid/update_fire()
-	overlays -= overlays_lying[X_FIRE_LAYER]
-	overlays -= overlays_standing[X_FIRE_LAYER]
-	if(on_fire)
-		overlays_lying[X_FIRE_LAYER] = image("icon"='icons/mob/OnFire.dmi', "icon_state"="Lying", "layer"= -X_FIRE_LAYER)
-		overlays_standing[X_FIRE_LAYER] = image("icon"='icons/mob/OnFire.dmi', "icon_state"="Standing", "layer"= -X_FIRE_LAYER)
-		if(src.lying)
-			overlays += overlays_lying[X_FIRE_LAYER]
-		else
-			overlays += overlays_standing[X_FIRE_LAYER]
-		return
-	else
-		overlays_lying[X_FIRE_LAYER] = null
-		overlays_standing[X_FIRE_LAYER] = null
+
 
 /mob/living/carbon/alien/humanoid/update_inv_wear_suit(var/update_icons=1)
 	if(wear_suit)
@@ -165,5 +151,4 @@
 #undef X_L_HAND_LAYER
 #undef X_R_HAND_LAYER
 #undef TARGETED_LAYER
-#undef X_FIRE_LAYER
 #undef X_TOTAL_LAYERS

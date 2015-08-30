@@ -1,32 +1,23 @@
+
+//NOT SURE WHAT THE FUCK ALIEN THIS IS SO TEMP LINKING TO SENTINAL FINDCODE: APOP1
 /mob/living/carbon/alien/humanoid
 	name = "alien"
-	icon_state = "alien_s"
+	icon_state = "Sentinal Walking"
 
 	var/obj/item/clothing/suit/wear_suit = null		//TODO: necessary? Are they even used? ~Carn
 	var/obj/item/clothing/head/head = null			//
 	var/obj/item/weapon/r_store = null
 	var/obj/item/weapon/l_store = null
+	var/damagemin = 10
+	var/damagemax = 19
+
+	var/tacklemin = 3
+	var/tacklemax = 5
+	var/tackle_chance = 100 //Should not be above 100%
+
 	var/caste = ""
-	var/move_delay_add = 0 // movement delay to add
-	var/heal_rate = 1
-	var/plasma_rate = 5
-	var/storedPlasma = 250
-	var/max_plasma = 500
-	speak_emote = list("hisses")
-	gender = NEUTER
-	dna = null
-	status_flags = CANPARALYSE|CANPUSH
-
-	var/oxygen_alert = 0
-	var/toxins_alert = 0
-	var/fire_alert = 0
-
-	var/heat_protection = 0.5
-
+	var/caste_speed = 0
 	update_icon = 1
-
-	language = "Xenomorph"
-
 
 //This is fine right now, if we're adding organ specific damage this needs to be updated
 /mob/living/carbon/alien/humanoid/New()
@@ -36,14 +27,18 @@
 	if(name == "alien")
 		name = text("alien ([rand(1, 1000)])")
 	real_name = name
-	add_language("Hivemind")
-	verbs -= /mob/living/carbon/alien/verb/evolve
-	internal_organs += new /datum/organ/internal/xenos/hivenode(src)
 	..()
+
+//Prevents aliens from pulling things - APOPHIS 03JAN2015 - TEMP DISABLED
+/*/mob/living/carbon/alien/humanoid/start_pulling(var/atom/movable/AM)
+	src << "<span class='warning'>You don't have the dexterity to pull anything.</span>"
+	return*/
 
 //This is fine, works the same as a human
 /mob/living/carbon/alien/humanoid/Bump(atom/movable/AM as mob|obj, yes)
 	spawn( 0 )
+
+
 		if ((!( yes ) || now_pushing))
 			return
 		now_pushing = 0
@@ -53,7 +48,23 @@
 
 		if (ismob(AM))
 			var/mob/tmob = AM
-			tmob.LAssailant = src
+
+			//Letting aliens walk through each other:
+			if(istype(tmob, /mob/living/carbon/alien/humanoid/) && (src.a_intent == "help") && (tmob.a_intent == "help") )
+				var/turf/oldloc = loc
+				loc = tmob.loc
+				tmob.loc = oldloc
+				now_pushing = 0
+				return
+			else if (istype(tmob, /mob/living/carbon/alien/larva)) // If it's a larva, intents don't matter: they always get out of the way
+				var/turf/oldloc = loc
+				loc = tmob.loc
+				tmob.loc = oldloc
+				now_pushing = 0
+				return
+			else
+				tmob.LAssailant = src
+
 
 		if (!now_pushing)
 			now_pushing = 1
@@ -69,17 +80,22 @@
 		return
 	return
 
-/mob/living/carbon/alien/humanoid/movement_delay()
-	var/tally = 0
-	if (istype(src, /mob/living/carbon/alien/humanoid/queen))
-		tally += 5
-	if (istype(src, /mob/living/carbon/alien/humanoid/drone))
-		tally += 2
-	if (istype(src, /mob/living/carbon/alien/humanoid/sentinel))
-		tally += 1
-	if (istype(src, /mob/living/carbon/alien/humanoid/hunter))
-		tally = -1 // hunters go supersuperfast
-	return (tally + move_delay_add + config.alien_delay)
+
+/////////////////////////// revised movement code using object oriented code - JF
+/mob/living/carbon/alien/humanoid/movement_delay(var/turf/T)
+	var/speed = 0
+	T = src.loc
+	speed += caste_speed
+	speed += move_delay_add
+	if (locate(/obj/effect/alien/weeds) in T)
+		if (speed >0)
+			speed = speed * 0.8
+		else if (speed == 0)
+			speed = -1
+		else if (speed < 0)
+			speed = speed * 1.2
+	return speed
+
 
 ///mob/living/carbon/alien/humanoid/bullet_act(var/obj/item/projectile/Proj) taken care of in living
 
@@ -106,19 +122,21 @@
 
 		if (2.0)
 			if (!shielded)
-				b_loss += 60
+				b_loss += (rand(150,325))
+				Paralyse(5)
+			f_loss += (rand(50,80))
 
-			f_loss += 60
-
-			ear_damage += 30
-			ear_deaf += 120
+		/*	ear_damage += 30	Aliens shouldn't go deaf.
+			ear_deaf += 120    */
 
 		if(3.0)
-			b_loss += 30
-			if (prob(50) && !shielded)
-				Paralyse(1)
-			ear_damage += 15
-			ear_deaf += 60
+			b_loss += (rand(60,165))
+			f_loss += (rand(10,35))
+			if (prob(70) && !shielded)
+				Paralyse(rand(1,3))
+
+		/*	ear_damage += 15	Aliens shouldn't go deaf.
+			ear_deaf += 60 */
 
 	adjustBruteLoss(b_loss)
 	adjustFireLoss(f_loss)
@@ -421,6 +439,22 @@ In all, this is a lot like the monkey code. /N
 		return 1
 	return 0
 
+/mob/living/carbon/alien/humanoid/Topic(href, href_list)
+	..()
+	if ((href_list["item"] && !( usr.stat ) && !( usr.restrained() ) && in_range(src, usr) ))
+		var/obj/effect/equip_e/alien/O = new /obj/effect/equip_e/alien(  )
+		O.source = usr
+		O.target = src
+		O.item = usr.get_active_hand()
+		O.s_loc = usr.loc
+		O.t_loc = loc
+		O.place = href_list["item"]
+		requests += O
+		spawn( 0 )
+			O.process()
+			return
+	..()
+	return
 
 /mob/living/carbon/alien/humanoid/var/co2overloadtime = null
 /mob/living/carbon/alien/humanoid/var/temperature_resistance = T0C+75
@@ -435,191 +469,43 @@ In all, this is a lot like the monkey code. /N
 	<BR><B>Right Hand:</B> <A href='?src=\ref[src];item=r_hand'>[(r_hand ? text("[]", r_hand) : "Nothing")]</A>
 	<BR><B>Head:</B> <A href='?src=\ref[src];item=head'>[(head ? text("[]", head) : "Nothing")]</A>
 	<BR><B>(Exo)Suit:</B> <A href='?src=\ref[src];item=suit'>[(wear_suit ? text("[]", wear_suit) : "Nothing")]</A>
+	<BR>[(handcuffed ? text("<A href='?src=\ref[src];item=handcuff'>Handcuffed</A>") : text("<A href='?src=\ref[src];item=handcuff'>Not Handcuffed</A>"))]
 	<BR><A href='?src=\ref[src];item=pockets'>Empty Pouches</A>
 	<BR><A href='?src=\ref[user];mach_close=mob[name]'>Close</A>
 	<BR>"}
 	user << browse(dat, text("window=mob[name];size=340x480"))
 	onclose(user, "mob[name]")
 	return
-
-
-/mob/living/carbon/alien/humanoid/proc/getPlasma()
-	return storedPlasma
-
-/mob/living/carbon/alien/humanoid/adjustToxLoss(amount)
-	storedPlasma = min(max(storedPlasma + amount,0),max_plasma) //upper limit of max_plasma, lower limit of 0
-	return
-
-/mob/living/carbon/alien/humanoid/adjustFireLoss(amount) // Weak to Fire
-	if(amount > 0)
-		..(amount * 2)
-	else
-		..(amount)
-	return
-
-/mob/living/carbon/alien/humanoid/updatehealth()
-	if(status_flags & GODMODE)
-		health = maxHealth
-		stat = CONSCIOUS
-	else
-		//oxyloss is only used for suicide
-		//toxloss isn't used for aliens, its actually used as alien powers!!
-		health = maxHealth - getOxyLoss() - getFireLoss() - getBruteLoss() - getCloneLoss()
-
-/mob/living/carbon/alien/humanoid/handle_mutations_and_radiation()
-
-	if(getFireLoss())
-		if((COLD_RESISTANCE in mutations) || prob(5))
-			adjustFireLoss(-1)
-
-	// Aliens love radiation nom nom nom
-	if (radiation)
-		if (radiation > 100)
-			radiation = 100
-
-		if (radiation < 0)
-			radiation = 0
-
-		switch(radiation)
-			if(1 to 49)
-				radiation--
-				if(prob(25))
-					adjustToxLoss(1)
-
-			if(50 to 74)
-				radiation -= 2
-				adjustToxLoss(1)
-				if(prob(5))
-					radiation -= 5
-
-			if(75 to 100)
-				radiation -= 3
-				adjustToxLoss(3)
-
-/mob/living/carbon/alien/humanoid/handle_fire()//Aliens on fire code
-	if(..())
+/*
+/mob/living/carbon/alien/humanoid/verb/transfer_plasma_jelly(var/obj/royaljelly/T as obj in oview(2))
+	set name = "Transfer Plasma to Jelly"
+	set category = "Object"
+	if(T.growth >= T.maxgrowth)
+		src << "\red The jelly is fully grown."
 		return
-	bodytemperature += BODYTEMP_HEATING_MAX //If you're on fire, you heat up!
+
+	var/mob/living/carbon/alien/user = src
+	if(isalien(user))
+		var/amount = input("Amount:", "Transfer Plasma to [T]") as num
+		if (amount)
+			amount = abs(round(amount))
+			if(user.powerc(amount))
+				if (get_dist(T,user) <= 1)
+					user.adjustToxLoss(-amount)
+					T.plasmapool += amount
+
+					if(T.plasmapool > 50)
+						var/amt = round(T.plasmapool / 50)
+						T.plasmapool -= amt * 50
+						var/i
+						for(i=0, i<amt, i++)
+							if(T.growth < T.maxgrowth)
+								T.cause_grow()
+							else
+								user << "\green The royal jelly is fully grown."
+					user << "\green You have transfered [amount] plasma to the royal jelly."
+				else
+					user << "\green You need to be closer."
 	return
 
-
-/mob/living/carbon/alien/humanoid/Process_Spaceslipping()
-	return 0 // Don't slip in space.
-
-/mob/living/carbon/alien/humanoid/Stat()
-
-	statpanel("Status")
-	stat(null, "Intent: [a_intent]")
-	stat(null, "Move Mode: [m_intent]")
-
-	..()
-
-	if (client.statpanel == "Status")
-		stat(null, "Plasma Stored: [getPlasma()]/[max_plasma]")
-
-	if(emergency_shuttle)
-		var/eta_status = emergency_shuttle.get_status_panel_eta()
-		if(eta_status)
-			stat(null, eta_status)
-
-/mob/living/carbon/alien/humanoid/Stun(amount)
-	if(status_flags & CANSTUN)
-		stunned = max(max(stunned,amount),0) //can't go below 0, getting a low amount of stun doesn't lower your current stun
-	else
-		// add some movement delay
-		move_delay_add = min(move_delay_add + round(amount / 2), 10) // a maximum delay of 10
-	return
-
-/mob/living/carbon/alien/humanoid/getDNA()
-	return null
-
-/mob/living/carbon/alien/humanoid/setDNA()
-	return
-
-/*----------------------------------------
-Proc: AddInfectionImages()
-Des: Gives the client of the alien an image on each infected mob.
-----------------------------------------*/
-/mob/living/carbon/alien/humanoid/proc/AddInfectionImages()
-	if (client)
-		for (var/mob/living/C in mob_list)
-			if(C.status_flags & XENO_HOST)
-				var/obj/item/alien_embryo/A = locate() in C
-				var/I = image('icons/mob/alien.dmi', loc = C, icon_state = "infected[A.stage]")
-				client.images += I
-	return
-
-
-/*----------------------------------------
-Proc: RemoveInfectionImages()
-Des: Removes all infected images from the alien.
-----------------------------------------*/
-/mob/living/carbon/alien/humanoid/proc/RemoveInfectionImages()
-	if (client)
-		for(var/image/I in client.images)
-			if(dd_hasprefix_case(I.icon_state, "infected"))
-				del(I)
-	return
-
-
-//I don't know why the defines, just needed to place the thing in a place
-#define HEAT_DAMAGE_LEVEL_1 2 //Amount of damage applied when your body temperature just passes the 360.15k safety point
-#define HEAT_DAMAGE_LEVEL_2 4 //Amount of damage applied when your body temperature passes the 400K point
-#define HEAT_DAMAGE_LEVEL_3 8 //Amount of damage applied when your body temperature passes the 1000K point
-/mob/living/carbon/alien/humanoid/handle_environment(var/datum/gas_mixture/environment)
-
-	//If there are alien weeds on the ground then heal if needed or give some plasma
-	if(locate(/obj/effect/alien/weeds) in loc)
-		if(health >= maxHealth - getCloneLoss())
-			adjustToxLoss(plasma_rate)
-		else
-			adjustBruteLoss(-heal_rate)
-			adjustFireLoss(-heal_rate)
-			adjustOxyLoss(-heal_rate)
-
-	if(!environment)
-		return
-	var/loc_temp = T0C
-	if(istype(loc, /obj/mecha))
-		var/obj/mecha/M = loc
-		loc_temp =  M.return_temperature()
-	else if(istype(get_turf(src), /turf/space))
-		var/turf/heat_turf = get_turf(src)
-		loc_temp = heat_turf.temperature
-	else if(istype(loc, /obj/machinery/atmospherics/unary/cryo_cell))
-		loc_temp = loc:air_contents.temperature
-	else
-		loc_temp = environment.temperature
-
-	//world << "Loc temp: [loc_temp] - Body temp: [bodytemperature] - Fireloss: [getFireLoss()] - Fire protection: [heat_protection] - Location: [loc] - src: [src]"
-
-	// Aliens are now weak to fire.
-
-	//After then, it reacts to the surrounding atmosphere based on your thermal protection
-	if(loc_temp > bodytemperature)
-		//Place is hotter than we are
-		var/thermal_protection = heat_protection //This returns a 0 - 1 value, which corresponds to the percentage of protection based on what you're wearing and what you're exposed to.
-		if(thermal_protection < 1)
-			bodytemperature += (1-thermal_protection) * ((loc_temp - bodytemperature) / BODYTEMP_HEAT_DIVISOR)
-	else
-		bodytemperature += 1 * ((loc_temp - bodytemperature) / BODYTEMP_HEAT_DIVISOR)
-	//	bodytemperature -= max((loc_temp - bodytemperature / BODYTEMP_AUTORECOVERY_DIVISOR), BODYTEMP_AUTORECOVERY_MINIMUM)
-
-	// +/- 50 degrees from 310.15K is the 'safe' zone, where no damage is dealt.
-	if(bodytemperature > 360.15)
-		//Body temperature is too hot.
-		fire_alert = max(fire_alert, 1)
-		switch(bodytemperature)
-			if(360 to 400)
-				apply_damage(HEAT_DAMAGE_LEVEL_1, BURN)
-				fire_alert = max(fire_alert, 2)
-			if(400 to 1000)
-				apply_damage(HEAT_DAMAGE_LEVEL_2, BURN)
-				fire_alert = max(fire_alert, 2)
-			if(1000 to INFINITY)
-				apply_damage(HEAT_DAMAGE_LEVEL_3, BURN)
-				fire_alert = max(fire_alert, 2)
-	return
-#undef HEAT_DAMAGE_LEVEL_1
-#undef HEAT_DAMAGE_LEVEL_2
-#undef HEAT_DAMAGE_LEVEL_3
+*/

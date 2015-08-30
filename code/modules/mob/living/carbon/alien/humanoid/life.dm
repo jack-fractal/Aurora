@@ -6,14 +6,28 @@
 	fire_alert = 0
 
 	var/temperature_alert = 0
+	var/alien_crit = 0
+
+	New()
+		..()
 
 
 /mob/living/carbon/alien/humanoid/Life()
 	set invisibility = 0
 	set background = 1
 
+
+	if(usedneurotox <= 0)
+		usedneurotox = 0
+	if(usedneurotox == 1)
+		src << "\green Our spit is ready."
+	usedneurotox--
+
 	if (monkeyizing)
 		return
+
+	if(storedPlasma < src.max_plasma)
+		storedPlasma++
 
 	..()
 
@@ -53,12 +67,15 @@
 	//stuff in the stomach
 	handle_stomach()
 
-	//handle being on fire
-	handle_fire()
 
+	handle_secretion()
 	//Status updates, death etc.
 	handle_regular_status_updates()
 	update_canmove()
+
+	neutralised--
+	if(neutralised <= 0)
+		neutralised = 0
 
 	// Grabbing
 	for(var/obj/item/weapon/grab/G in src)
@@ -90,6 +107,8 @@
 			if (prob(10))
 				stuttering = max(10, stuttering)
 
+	proc/handle_secretion()
+		return
 
 	proc/breathe()
 		if(reagents)
@@ -130,7 +149,7 @@
 					breath = loc.remove_air(breath_moles)
 
 					// Handle chem smoke effect  -- Doohl
-					for(var/obj/effect/effect/smoke/chem/smoke in view(1, src))
+					for(var/obj/effect/effect/chem_smoke/smoke in view(1, src))
 						if(smoke.reagents.total_volume)
 							smoke.reagents.reaction(src, INGEST)
 							spawn(5)
@@ -174,14 +193,14 @@
 			return 0
 
 		var/toxins_used = 0
-		var/breath_pressure = (breath.total_moles * R_IDEAL_GAS_EQUATION * breath.temperature) / BREATH_VOLUME
+		var/breath_pressure = (breath.total_moles*R_IDEAL_GAS_EQUATION*breath.temperature)/BREATH_VOLUME
 
 		//Partial pressure of the toxins in our breath
-		var/Toxins_pp = (breath.gas["toxins"] / breath.total_moles) * breath_pressure
+		var/Toxins_pp = (breath.gas["toxins"]/breath.total_moles)*breath_pressure
 
 		if(Toxins_pp) // Detect toxins in air
 
-			adjustToxLoss(breath.gas["toxins"] *250)
+			adjustToxLoss(breath.gas["toxins"]*250)
 			toxins_alert = max(toxins_alert, 1)
 
 			toxins_used = breath.gas["toxins"]
@@ -190,8 +209,8 @@
 			toxins_alert = 0
 
 		//Breathe in toxins and out oxygen
-		breath.adjust_gas("toxins", -toxins_used)
-		breath.adjust_gas("oxygen", toxins_used)
+		breath.gas["toxins"] -= toxins_used
+		breath.gas["oxygen"] += toxins_used
 
 		if(breath.temperature > (T0C+66) && !(COLD_RESISTANCE in mutations)) // Hot air hurts :(
 			if(prob(20))
@@ -260,7 +279,7 @@
 		return fire_prot
 	*/
 
-	handle_chemicals_in_body()
+	proc/handle_chemicals_in_body()
 
 		if(reagents) reagents.metabolize(src)
 
@@ -299,22 +318,23 @@
 		return //TODO: DEFERRED
 
 
-	handle_regular_status_updates()
+	proc/handle_regular_status_updates()
 		updatehealth()
 
 		if(stat == DEAD)	//DEAD. BROWN BREAD. SWIMMING WITH THE SPESS CARP
 			blinded = 1
 			silent = 0
 		else				//ALIVE. LIGHTS ARE ON
-			if(health < config.health_threshold_dead || !has_brain())
+			if(health <= -100 || (health<=-70 && caste == "Runner"))
 				death()
 				blinded = 1
 				stat = DEAD
 				silent = 0
+				adjustOxyLoss(1000)
 				return 1
 
 			//UNCONSCIOUS. NO-ONE IS HOME
-			if( (getOxyLoss() > 50) || (config.health_threshold_crit > health) )
+			if( (getOxyLoss() > 50) || alien_crit > health)
 				if( health <= 20 && prob(1) )
 					spawn(0)
 						emote("gasp")
@@ -325,7 +345,14 @@
 			if(paralysis)
 				AdjustParalysis(-1)
 				blinded = 1
+				canmove = 0
+				lying = 1
 				stat = UNCONSCIOUS
+				update_icons()
+			else if(neutralised)
+				lying = 1
+				canmove = 0
+				update_icons()
 			else if(sleeping)
 				sleeping = max(sleeping-1, 0)
 				blinded = 1
@@ -336,6 +363,9 @@
 			//CONSCIOUS
 			else
 				stat = CONSCIOUS
+				lying = 0
+				canmove = 1
+				update_icons()
 
 			/*	What in the living hell is this?*/
 			if(move_delay_add > 0)
@@ -359,28 +389,70 @@
 				ear_damage = max(ear_damage-0.05, 0)
 
 			//Other
-			handle_statuses()
+			if(stunned)
+				AdjustStunned(-1)
+				if(!stunned)
+					update_icons()
+
+			if(weakened)
+				weakened = max(weakened-1,0)	//before you get mad Rockdtben: I done this so update_canmove isn't called multiple times
+
+			if(stuttering)
+				stuttering = max(stuttering-1, 0)
+
+			if(silent)
+				silent = max(silent-1, 0)
+
+			if(druggy)
+				druggy = max(druggy-1, 0)
 		return 1
 
+	var/locating = 0
+	var/obj/target = null
+	proc/queen_locator()
+		if(locate_queen)
+			for(var/mob/living/carbon/alien/humanoid/queen/M in mob_list)
+				if(M && M.stat != DEAD)
+					target = M
+				else
+					target = null
+		if(!target)
+			locate_queen.icon_state = "trackoff"
+			return
 
-	handle_regular_hud_updates()
+		locate_queen.dir = get_dir(src,target)
+		if(target && target != src)
+			if(get_dist(src, target) != 0)
+				locate_queen.icon_state = "trackon"
+			else
+				locate_queen.icon_state = "trackondirect"
 
-		if (stat == 2 || (XRAY in mutations))
-			sight |= SEE_TURFS
+		spawn(10) .()
+	proc/handle_regular_hud_updates()
+		if(locating != 1)
+			queen_locator()
+			locating = 1
+		if (nightvision == 2)
+
 			sight |= SEE_MOBS
-			sight |= SEE_OBJS
+
 			see_in_dark = 8
-			see_invisible = SEE_INVISIBLE_LEVEL_TWO
-		else if (stat != 2)
+			see_invisible = SEE_INVISIBLE_MINIMUM
+		else if (nightvision == 1)
 			sight |= SEE_MOBS
 			sight &= ~SEE_TURFS
 			sight &= ~SEE_OBJS
-			see_in_dark = 8
+			see_in_dark = 4
 			see_invisible = SEE_INVISIBLE_LEVEL_TWO
+		else
+			nightvision = 1
+
+
+		var/HP = (health/maxHealth)*100
 
 		if (healths)
 			if (stat != 2)
-				switch(health)
+				switch(HP)
 					if(100 to INFINITY)
 						healths.icon_state = "health0"
 					if(75 to 100)
@@ -395,6 +467,34 @@
 						healths.icon_state = "health5"
 			else
 				healths.icon_state = "health6"
+
+		var/plasma = (storedPlasma/max_plasma)*100
+
+		if (alien_plasma_display)
+			if (stat !=2)
+				switch(plasma)
+					if(100 to INFINITY)
+						alien_plasma_display.icon_state = "plasma8"
+					if(80 to 99)
+						alien_plasma_display.icon_state = "plasma7"
+					if(70 to 80)
+						alien_plasma_display.icon_state = "plasma6"
+					if(60 to 70)
+						alien_plasma_display.icon_state = "plasma5"
+					if(50 to 60)
+						alien_plasma_display.icon_state = "plasma4"
+					if(40 to 50)
+						alien_plasma_display.icon_state = "plasma3"
+					if(30 to 40)
+						alien_plasma_display.icon_state = "plasma2"
+					if(15 to 30)
+						alien_plasma_display.icon_state = "plasma1"
+					if(0 to 15)
+						alien_plasma_display.icon_state = "plasma0"
+					else
+						alien_plasma_display.icon_state = "plasma0"
+			else
+				alien_plasma_display.icon_state = "plasma0"
 
 		if(pullin)	pullin.icon_state = "pull[pulling ? 1 : 0]"
 
@@ -448,8 +548,3 @@
 						if(!(status_flags & GODMODE))
 							M.adjustBruteLoss(5)
 						nutrition += 10
-
-/mob/living/carbon/alien/humanoid/handle_stunned()
-	if(stunned && !..())
-		update_icons()
-	return stunned

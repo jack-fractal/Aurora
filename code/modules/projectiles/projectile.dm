@@ -51,6 +51,8 @@
 	var/agony = 0
 	var/embed = 0 // whether or not the projectile can embed itself in the mob
 
+	var/PROJECTILESPEED = 1 // Higher is slower
+
 	proc/on_hit(var/atom/target, var/blocked = 0)
 		if(blocked >= 2)		return 0//Full block
 		if(!isliving(target))	return 0
@@ -85,7 +87,12 @@
 			if(!istype(A, /mob/living))
 				loc = A.loc
 				return 0// nope.avi
-
+			if(get_adj_simple(firer,A) && A.loc != get_step(firer,firer.dir))
+				bumped = 0
+				permutated.Add(A)
+				return 0
+			//Lower accurancy/longer range tradeoff. Distance matters a lot here, so at
+			// close distance, actually RAISE the chance to hit.
 			var/distance = get_dist(starting,loc)
 			var/miss_modifier = -75
 
@@ -112,9 +119,8 @@
 					firer.attack_log += "\[[time_stamp()]\] <b>[firer]/[firer.ckey]</b> shot <b>[M]/[M.ckey]</b> with <b>[src.type]</b>"
 					msg_admin_attack("[key_name_admin(firer)] shot [key_name_admin(M)] with [src] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[firer.x];Y=[firer.y];Z=[firer.z]'>JMP</a>)") //BS12 EDIT ALG
 				else
-					M.attack_log += "\[[time_stamp()]\] <b>UNKNOWN SUBJECT (No longer exists)</b> shot <b>[M]/[M.ckey]</b> with <b>[src]</b>"
-					msg_admin_attack("UNKNOWN shot [key_name_admin(M)] with [src] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[firer.x];Y=[firer.y];Z=[firer.z]'>JMP</a>)") //BS12 EDIT ALG
-
+					M.attack_log += "\[[time_stamp()]\] <b>UNKNOWN SUBJECT (No longer exists)</b> shot <b>[M]/[M.ckey]</b> with a <b>[src]</b>"
+					msg_admin_attack("UNKNOWN shot [M] ([M.ckey]) with a [src] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[firer.x];Y=[firer.y];Z=[firer.z]'>JMP</a>)") //BS12 EDIT ALG
 		if(A)
 			if (!forcedodge)
 				forcedodge = A.bullet_act(src, def_zone) // searches for return value
@@ -157,7 +163,7 @@
 				del(src)
 				return
 			step_towards(src, current)
-			sleep(1)
+			sleep(PROJECTILESPEED)
 			if(!bumped && !isturf(original))
 				if(loc == get_turf(original))
 					if(!(original in permutated))
@@ -205,3 +211,17 @@
 				M = locate() in get_step(src,target)
 				if(istype(M))
 					return 1
+
+//Abby -- Just check if they're 1 tile horizontal or vertical, no diagonals
+/proc/get_adj_simple(atom/Loc1 as turf|mob|obj,atom/Loc2 as turf|mob|obj)
+	var/dx = Loc1.x - Loc2.x
+	var/dy = Loc1.y - Loc2.y
+
+	if(dx == 0)
+		if(dy == -1 || dy == 1)
+			return 1
+	if(dy == 0)
+		if(dx == -1 || dx == 1)
+			return 1
+
+	return 0

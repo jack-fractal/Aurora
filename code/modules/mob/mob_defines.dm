@@ -22,6 +22,8 @@
 	var/obj/screen/fire = null
 	var/obj/screen/bodytemp = null
 	var/obj/screen/healths = null
+	var/obj/screen/alien_plasma_display = null
+	var/obj/screen/locate_queen = null
 	var/obj/screen/throw_icon = null
 	var/obj/screen/nutrition_icon = null
 	var/obj/screen/pressure = null
@@ -110,6 +112,7 @@
 	var/paralysis = 0.0
 	var/stunned = 0.0
 	var/weakened = 0.0
+	var/frozen = 0.0
 	var/losebreath = 0.0//Carbon
 	var/intent = null//Living
 	var/shakecamera = 0
