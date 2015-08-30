@@ -21,24 +21,8 @@
 
 
 	//RUNNERS NOW USE JELLY, SINCE THEY EVOLVE INTO HUNTERS
-	var/hasJelly = 0
-	var/jellyProgress = 0
-	var/jellyProgressMax = 750
-	Stat()
-		..()
-		stat(null, "Jelly Progress: [jellyProgress]/[jellyProgressMax]")
-	proc/growJelly()
-		spawn while(1)
-			if(hasJelly)
-				if(jellyProgress < jellyProgressMax)
-					jellyProgress = min(jellyProgress + 1, jellyProgressMax)
-			sleep(10)
-	proc/canEvolve()
-		if(!hasJelly)
-			return 0
-		if(jellyProgress < jellyProgressMax)
-			return 0
-		return 1
+	canUseJelly = TRUE
+	jellyProgressMax = 750
 
 /mob/living/carbon/alien/humanoid/runner/New()
 	var/datum/reagents/R = new/datum/reagents(100)
@@ -50,7 +34,6 @@
 	if(name == "alien runner")
 		name = text("alien runner ([rand(1, 1000)])")
 	real_name = name
-	growJelly()
 	verbs -= /atom/movable/verb/pull
 	verbs -= /mob/living/carbon/alien/humanoid/verb/plant
 	verbs -= /mob/living/carbon/alien/verb/unweld_vent

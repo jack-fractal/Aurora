@@ -17,6 +17,12 @@
 
 	var/caste = ""
 	var/caste_speed = 0
+	
+	var/hasJelly = FALSE
+	var/canUseJelly = FALSE
+	var/jellyProgress = 0
+	var/jellyProgressMax = 900
+	
 	update_icon = 1
 
 //This is fine right now, if we're adding organ specific damage this needs to be updated
@@ -27,8 +33,33 @@
 	if(name == "alien")
 		name = text("alien ([rand(1, 1000)])")
 	real_name = name
+	growJelly()
 	..()
+	
 
+/mob/living/carbon/alien/humanoid/Stat()
+	..()
+	if (canUseJelly && hasJelly)
+		stat(null, "Jelly Progress: [jellyProgress]/[jellyProgressMax]")
+		
+		
+/mob/living/carbon/alien/humanoid/proc/growJelly()
+	if (canUseJelly)
+		spawn while(1)
+			if(hasJelly)
+				if(jellyProgress < jellyProgressMax)
+					jellyProgress = min(jellyProgress + 1, jellyProgressMax)
+			sleep(10)
+			
+			
+/mob/living/carbon/alien/humanoid/proc/canEvolve()
+	if(!hasJelly)
+		return 0
+	if(jellyProgress < jellyProgressMax)
+		return 0
+	return 1
+	
+	
 //Prevents aliens from pulling things - APOPHIS 03JAN2015 - TEMP DISABLED
 /*/mob/living/carbon/alien/humanoid/start_pulling(var/atom/movable/AM)
 	src << "<span class='warning'>You don't have the dexterity to pull anything.</span>"

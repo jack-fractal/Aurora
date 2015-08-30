@@ -118,16 +118,24 @@
 	set name = "Lay Egg (100)"
 	set desc = "Lay an egg to produce huggers to impregnate prey with."
 	set category = "Alien"
+	
+	
+	world << "Starting egg lay"
 
 	if((locate(/obj/effect/alien/egg) in get_turf(src)) || (locate(/obj/royaljelly) in get_turf(src)) || (locate(/obj/structure/mineral_door/resin) in get_turf(src)) || (locate(/obj/effect/alien/resin/wall) in get_turf(src)) || (locate(/obj/effect/alien/resin/membrane) in get_turf(src)) || (locate(/obj/structure/stool/bed/nest) in get_turf(src)))
 		src << "There's already an egg, structure, or royal jelly here."
 		return
 
+	world << "Past the test."
+		
 	if(powerc(100,1))//Can't plant eggs on spess tiles. That's silly.
 		adjustToxLoss(-100)
 		for(var/mob/O in viewers(src, null))
 			O.show_message(text("\green <B>[src] has laid an egg!</B>"), 1)
 		new /obj/effect/alien/egg(loc)
+		
+	world << "Finished trying to lay egg."
+		
 	return
 
 /mob/living/carbon/alien/humanoid/queen/verb/lay_jelly()

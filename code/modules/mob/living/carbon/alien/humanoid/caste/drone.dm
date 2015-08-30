@@ -14,28 +14,14 @@
 	tacklemin = 2
 	tacklemax = 3 //old max 5
 	tackle_chance = 40 //Should not be above 100% old chance 50
-	var/hasJelly = 0
-	var/jellyProgress = 0
-	var/jellyProgressMax = 1000
+	
+	canUseJelly = TRUE
+	jellyProgressMax = 1000
+	
 	psychiccost = 30
 	class = 1
 	caste_speed = -1
 
-	Stat()
-		..()
-		stat(null, "Jelly Progress: [jellyProgress]/[jellyProgressMax]")
-	proc/growJelly()
-		spawn while(1)
-			if(hasJelly)
-				if(jellyProgress < jellyProgressMax)
-					jellyProgress = min(jellyProgress + 1, jellyProgressMax)
-			sleep(10)
-	proc/canEvolve()
-		if(!hasJelly)
-			return 0
-		if(jellyProgress < jellyProgressMax)
-			return 0
-		return 1
 
 /mob/living/carbon/alien/humanoid/drone/New()
 	var/datum/reagents/R = new/datum/reagents(100)
@@ -48,7 +34,6 @@
 		src.name = text("alien drone ([rand(1, 1000)])")
 	src.real_name = src.name
 	verbs.Add(/mob/living/carbon/alien/humanoid/proc/resin,/mob/living/carbon/alien/humanoid/proc/weak_acid,/mob/living/carbon/alien/ventcrawl)
-	growJelly()
 	verbs -= /atom/movable/verb/pull
 	/*var/matrix/M = matrix()
 	M.Scale(0.9,0.9)

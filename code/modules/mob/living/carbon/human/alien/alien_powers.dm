@@ -76,29 +76,6 @@
 			src << "\green You have transferred [amount] plasma to [M]"
 	return
 
-// Queen verbs.
-/mob/living/carbon/human/proc/lay_egg()
-
-	set name = "Lay Egg (75)"
-	set desc = "Lay an egg to produce huggers to impregnate prey with."
-	set category = "Abilities"
-
-	if(!aliens_allowed)
-		src << "You begin to lay an egg, but hesitate. You suspect it isn't allowed."
-		verbs -= /mob/living/carbon/human/proc/lay_egg
-		return
-
-	if(locate(/obj/effect/alien/egg) in get_turf(src))
-		src << "There's already an egg here."
-		return
-
-	if(check_alien_ability(75,1,"egg sac"))
-		for(var/mob/O in viewers(src, null))
-			O.show_message(text("\green <B>[src] has laid an egg!</B>"), 1)
-		new /obj/effect/alien/egg(loc)
-
-	return
-
 // Drone verbs.
 /mob/living/carbon/human/proc/evolve()
 	set name = "Evolve (500)"

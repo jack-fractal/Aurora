@@ -8,9 +8,11 @@
 	max_plasma = 600
 	icon_state = "Spitter Walking"
 	plasma_rate = 30
-	var/progress = 0
-	var/hasJelly = 1
-	var/progressmax = 900
+	
+	canUseJelly = TRUE
+	hasJelly = TRUE
+	jellyProgressMax = 900
+	
 	damagemin = 20
 	damagemax = 26
 	tacklemin = 2
@@ -23,22 +25,6 @@
 	//TEMP VARIABLES
 	var/SPITCOOLDOWN = 10
 	var/usedspit = 0
-	//END TEMP VARIABLES
-	Stat()
-		..()
-		stat(null, "Jelly Progress: [progress]/[progressmax]")
-	proc/growJelly()
-		spawn while(1)
-			if(hasJelly)
-				if(progress < progressmax)
-					progress = min(progress + 1, progressmax)
-			sleep(10)
-	proc/canEvolve()
-		if(!hasJelly)
-			return 0
-		if(progress < progressmax)
-			return 0
-		return 1
 
 
 /mob/living/carbon/alien/humanoid/spitter/New()
@@ -58,11 +44,6 @@
 	/mob/living/carbon/alien/humanoid/proc/quickspit,
 	/mob/living/carbon/alien/ventcrawl)
 	verbs -= /mob/living/carbon/alien/humanoid/verb/plant
-	//var/matrix/M = matrix()
-	//M.Scale(1.15,1.1)
-	//src.transform = M
-	//pixel_y = 3
-	growJelly()
 	..()
 
 

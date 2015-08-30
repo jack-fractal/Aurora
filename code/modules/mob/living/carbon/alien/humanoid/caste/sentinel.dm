@@ -14,9 +14,10 @@
 	tacklemax = 4
 	tackle_chance = 50 //Should not be above 100%
 	heal_rate = 6
-	var/hasJelly = 0
-	var/jellyProgress = 0
-	var/jellyProgressMax = 750
+	
+	canUseJelly = TRUE
+	jellyProgressMax = 750
+	
 	psychiccost = 25
 	class = 1
 	caste_speed = -1
@@ -24,23 +25,6 @@
 	//TEMP VARIABLES
 	var/SPITCOOLDOWN = 10
 	var/usedspit = 0
-	//END TEMP VARIABLES
-	Stat()
-		..()
-		stat(null, "Jelly Progress: [jellyProgress]/[jellyProgressMax]")
-	proc/growJelly()
-		spawn while(1)
-			if(hasJelly)
-				if(jellyProgress < jellyProgressMax)
-					jellyProgress = min(jellyProgress + 1, jellyProgressMax)
-			sleep(10)
-	proc/canEvolve()
-		if(!hasJelly)
-			return 0
-		if(jellyProgress < jellyProgressMax)
-			return 0
-		return 1
-
 
 /mob/living/carbon/alien/humanoid/sentinel/New()
 	var/datum/reagents/R = new/datum/reagents(100)
@@ -57,7 +41,6 @@
 	/mob/living/carbon/alien/humanoid/proc/quickspit,
 	/mob/living/carbon/alien/ventcrawl)
 	verbs -= /mob/living/carbon/alien/humanoid/verb/plant
-	growJelly()
 	..()
 
 

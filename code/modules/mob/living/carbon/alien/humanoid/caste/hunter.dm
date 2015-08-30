@@ -18,31 +18,15 @@
 	
 	var/usedpounce = 0
 
-	var/hasJelly = 1
-	var/jellyProgress = 0
-	var/jellyProgressMax = 900
+	canUseJelly = TRUE
+	hasJelly = TRUE
+	jellyProgressMax = 900
+	
 	psychiccost = 25
-	Stat()
-		..()
-		stat(null, "Jelly Progress: [jellyProgress]/[jellyProgressMax]")
-	proc/growJelly()
-		spawn while(1)
-			if(hasJelly)
-				if(jellyProgress < jellyProgressMax)
-					jellyProgress = min(jellyProgress + 1, jellyProgressMax)
-			sleep(10)
-	proc/canEvolve()
-		if(!hasJelly)
-			return 0
-		if(jellyProgress < jellyProgressMax)
-			return 0
-		return 1
-
 
 /mob/living/carbon/alien/humanoid/hunter/New()
 	..()
 	var/datum/reagents/R = new/datum/reagents(100)
-	growJelly()
 	src.frozen = 1
 	spawn (50)
 		src.frozen = 0
